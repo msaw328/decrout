@@ -1,0 +1,3 @@
+const square: (rt[u32]:u32)> = rt [ x: u32 ]: u32 {
+    return x * x;
+}
