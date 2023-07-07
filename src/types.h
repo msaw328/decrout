@@ -71,8 +71,6 @@ int type_are_the_same(type_info_t* a, type_info_t* b);
 
 char* type_to_string(type_info_t* type);
 
-int type_from_tokens(type_info_t* type, lex_token_t* tokens, size_t num_tokens);
-
 // Deallocated memory owned by the type_info structure
 void type_destroy(type_info_t* type);
 

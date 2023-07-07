@@ -263,7 +263,3 @@ void type_destroy(type_info_t* type) {
 
     return;
 }
-
-//int type_from_tokens(type_info_t* type, lex_token_t* tokens, size_t num_tokens) {
-//    return 0;
-//}

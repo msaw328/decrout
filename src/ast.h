@@ -123,6 +123,7 @@ struct ast_statement_t {
 // The global scope may contain only declarations!
 struct ast_t {
     size_t num_declarations;
+    size_t allocated_declarations;
     struct ast_declaration_t** declarations;
 };
 typedef struct ast_t ast_t;
