@@ -44,11 +44,12 @@ static char* _predefined_tokens[] = {
     [TOKEN_EXCLAMATION] = "!",
     [TOKEN_DOUBLE_AMPERSAND] = "&&",
     [TOKEN_DOUBLE_PIPE] = "||",
-    [TOKEN_DOUBLE_UP_ARROW] = "^^",
     [TOKEN_DOUBLE_EQUAL] = "==",
     [TOKEN_TWO_TRIANGLES] = "<>",
     [TOKEN_TRIANGLE_LEFT] = "<",
     [TOKEN_TRIANGLE_RIGHT] = ">",
+    [TOKEN_TRIANGLE_EQUAL_LEFT] = "<=",
+    [TOKEN_TRIANGLE_EQUAL_RIGHT] = ">=",
     [TOKEN_DOT] = ".",
     [TOKEN_BRACKET] = "{",
     [TOKEN_END_BRACKET] = "}",
@@ -198,6 +199,7 @@ void _determine_token_type(char* new_token, lex_token_t* tk) {
 }
 
 int tokenize_and_lex(char* src_str, lex_tokens_t* list) {
+    size_t line_counter = 1;
     size_t allocated_tokens = STARTING_TOKEN_LIST_LENGTH;
 
     list->tokens = malloc(sizeof(lex_token_t) * allocated_tokens);
@@ -211,11 +213,13 @@ int tokenize_and_lex(char* src_str, lex_tokens_t* list) {
         // If current char is start of the comment, we skip the comment
         if(*src_str == '#') {
             while(*src_str != '\n' && *src_str != '\0') src_str++;
+            if(*src_str == '\n') line_counter++;
             continue;
         }
 
         // If current char is one of the whitespace characters, we skip it too
         if(strchr(WHITESPACE_CHARS, *src_str) != NULL) {
+            if(*src_str == '\n') line_counter++;
             src_str++;
             continue;
         }
@@ -239,7 +243,14 @@ int tokenize_and_lex(char* src_str, lex_tokens_t* list) {
         // after this point.
         _determine_token_type(new_token, list->tokens + list->num_tokens);
 
+        // Also store reference to a source file line for error reporting
+        list->tokens[list->num_tokens].line_ref = line_counter;
+
         list->num_tokens++;
     }
     return 0;
+}
+
+void tokens_clear(lex_tokens_t* list) {
+    free(list->tokens);
 }

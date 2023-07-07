@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// types - Information about types
+// types - Information about types, utils used for parsing etc.
 
 #include "types.h"
 
@@ -263,3 +263,7 @@ void type_destroy(type_info_t* type) {
 
     return;
 }
+
+//int type_from_tokens(type_info_t* type, lex_token_t* tokens, size_t num_tokens) {
+//    return 0;
+//}

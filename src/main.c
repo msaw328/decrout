@@ -26,35 +26,37 @@
 
 int main(int argc, char** argv) {
     if(argc < 2) {
-       printf("Usage: %s <filename>\n", argv[0]);
+        printf("Usage: %s <filename>\n", argv[0]);
         return 0;
     }
 
-    //char* filecontents = read_source_file(argv[1]);
+#if 0
+    char* filecontents = read_source_file(argv[1]);
 
-    //lex_tokens_t tk = { 0 };
-    //tokenize_and_lex(filecontents, &tk);
+    lex_tokens_t tk = { 0 };
+    tokenize_and_lex(filecontents, &tk);
 
     // TODO: Add parsing
     // Replace below testing code for tokens with proper parsing
-#if 0
     printf("Total tokens: %zu\n", tk.num_tokens);
     for(size_t i = 0; i < tk.num_tokens; i++) {
-        printf("Token type: %02X Token contents: %s\n", tk.tokens[i].type, (tk.tokens[i].token_contents != NULL) ? tk.tokens[i].token_contents : "(null)");
+        printf("Token type: %02X Token contents: %s Line no: %zu\n", tk.tokens[i].type, (tk.tokens[i].token_contents != NULL) ? tk.tokens[i].token_contents : "(null)", tk.tokens[i].line_ref);
         if(tk.tokens[i].token_contents != NULL) {
             free(tk.tokens[i].token_contents);
         }
     }
+
+    free(tk.tokens);
+    free(filecontents);
 #endif
 
-    //free(tk.tokens);
-    //free(filecontents);
-
-    size_t arg_count = 2;
+#if 0
+    size_t arg_count = 3;
 
     type_info_t** arg_types = malloc(sizeof(type_info_t*) * arg_count);
     arg_types[0] = type_get_native_by_name("u32");
     arg_types[1] = type_make_pointer_to(type_get_native_by_name("u32"));
+    arg_types[2] = type_make_pointer_to(type_make_pointer_to(type_get_native_by_name("u64")));
 
     type_info_t* return_type = type_make_pointer_to(type_get_native_by_name("u32"));
 
@@ -65,4 +67,5 @@ int main(int argc, char** argv) {
 
     type_destroy(total_type);
     free(type_name);
+#endif
 }

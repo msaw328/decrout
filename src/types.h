@@ -14,12 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// types - Information about types
+// types - Information about types, utils used for parsing etc.
 
 #ifndef _I_PARSER_H_
 #define _I_PARSER_H_
 
 #include <stddef.h>
+
+#include "lexer.h"
 
 #define TYPE_FAMILY_VOID 0
 #define TYPE_FAMILY_NATIVE 1 // TODO: Add support for floating point
@@ -68,6 +70,8 @@ type_info_t* type_make_routine(size_t arg_c, type_info_t** args, type_info_t* re
 int type_are_the_same(type_info_t* a, type_info_t* b);
 
 char* type_to_string(type_info_t* type);
+
+int type_from_tokens(type_info_t* type, lex_token_t* tokens, size_t num_tokens);
 
 // Deallocated memory owned by the type_info structure
 void type_destroy(type_info_t* type);

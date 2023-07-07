@@ -14,32 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// lexer - Lexing functionality, recognition of tokens
+// parser - Parsing functionality, constructing the AST from a stream of lexer tokens
 
-#ifndef _I_LEXER_H_
-#define _I_LEXER_H_
+#ifndef _I_PARSER_H_
+#define _I_PARSER_H_
 
-#include <stdlib.h>
-#include <stddef.h>
+#include "ast.h"
+#include "lexer.h"
 
-#include "lex_token_types.h"
-
-// Token has a type, and if the type might have varying contents,
-// the contents are saved in a malloc'ed buffer in token_contents
-struct lex_token_t {
-    lex_token_type_t type;
-    char* token_contents;
-    size_t line_ref;
-};
-typedef struct lex_token_t lex_token_t;
-
-struct lex_tokens_t {
-    size_t num_tokens;
-    lex_token_t* tokens;
-};
-typedef struct lex_tokens_t lex_tokens_t;
-
-int tokenize_and_lex(char* src_str, lex_tokens_t* list);
-void tokens_clear(lex_tokens_t* list);
+void parse(lex_tokens_t* tokens, ast_t* ast);
 
 #endif
