@@ -50,15 +50,15 @@ int main(int argc, char** argv) {
     free(filecontents);
 #endif
 
-#if 0
+#if 1
     size_t arg_count = 3;
 
     type_info_t** arg_types = malloc(sizeof(type_info_t*) * arg_count);
-    arg_types[0] = type_get_native_by_name("u32");
-    arg_types[1] = type_make_pointer_to(type_get_native_by_name("u32"));
-    arg_types[2] = type_make_pointer_to(type_make_pointer_to(type_get_native_by_name("u64")));
+    arg_types[0] = type_get_builtin_by_name("u32");
+    arg_types[1] = type_make_pointer_to(type_get_builtin_by_name("u32"));
+    arg_types[2] = type_make_pointer_to(type_make_pointer_to(type_get_builtin_by_name("u64")));
 
-    type_info_t* return_type = type_make_pointer_to(type_get_native_by_name("u32"));
+    type_info_t* return_type = type_make_pointer_to(type_get_builtin_by_name("u32"));
 
     type_info_t* routine_type = type_make_routine(arg_count, arg_types, return_type);
     type_info_t* total_type = type_make_pointer_to(routine_type);

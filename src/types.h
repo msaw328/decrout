@@ -24,19 +24,19 @@
 #include "lexer.h"
 
 #define TYPE_FAMILY_VOID 0
-#define TYPE_FAMILY_NATIVE 1 // TODO: Add support for floating point
+#define TYPE_FAMILY_BUILTIN 1 // TODO: Add support for floating point
 #define TYPE_FAMILY_POINTER 2
 #define TYPE_FAMILY_ROUTINE 3
-//#define TYPE_FAMILY_STRUCTURAL 4 TODO: Add support for structs
+//#define TYPE_FAMILY_STRUCT 4 TODO: Add support for structs
 //#define TYPE_FAMILY_ALIAS 5 TODO: Add support for type aliasing
 
 // Structure describing any basic native data type, including
 // integers, void, bools, chars, floats (in the future)
 // TODO: Maybe should add signedness etc?
-struct type_info_native_t {
+struct type_info_builtin_t {
     char* name;
 };
-typedef struct type_info_native_t type_info_native_t;
+typedef struct type_info_builtin_t type_info_builtin_t;
 
 // Structure describing a routine type (only usable through a pointer)
 struct type_info_routine_t {
@@ -56,14 +56,14 @@ struct type_info_t {
     int family;
     size_t size; // in bytes
     union {
-        type_info_native_t native;
+        type_info_builtin_t builtin;
         type_info_routine_t routine;
         type_info_pointer_t pointer;
     } type_data;
 };
 typedef struct type_info_t type_info_t;
 
-type_info_t* type_get_native_by_name(char* name);
+type_info_t* type_get_builtin_by_name(char* name);
 type_info_t* type_make_pointer_to(type_info_t* type);
 type_info_t* type_make_routine(size_t arg_c, type_info_t** args, type_info_t* ret);
 

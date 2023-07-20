@@ -22,82 +22,82 @@
 #include <stdlib.h>
 
 // An array defining basic native types
-static type_info_t _native_types[] = {
+static type_info_t _builtin_types[] = {
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "void",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "bool",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "char",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "u8",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "i8",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "u16",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "i16",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "u32",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "i32",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "u64",
         }
     },
     {
-        .family = TYPE_FAMILY_NATIVE,
-        .type_data.native = {
+        .family = TYPE_FAMILY_BUILTIN,
+        .type_data.builtin = {
             .name = "i64",
         }
     },
 };
 
-#define NATIVE_TYPES_NUM (sizeof(_native_types) / sizeof(_native_types[0]))
+#define BUILTIN_TYPES_NUM (sizeof(_builtin_types) / sizeof(_builtin_types[0]))
 
-type_info_t* type_get_native_by_name(char* name) {
-    for(size_t i = 0; i < NATIVE_TYPES_NUM; i++) {
-        type_info_t* ptr = _native_types + i;
+type_info_t* type_get_builtin_by_name(char* name) {
+    for(size_t i = 0; i < BUILTIN_TYPES_NUM; i++) {
+        type_info_t* ptr = _builtin_types + i;
 
-        if(strcmp(ptr->type_data.native.name, name) == 0) {
+        if(strcmp(ptr->type_data.builtin.name, name) == 0) {
             return ptr;
         };
     }
@@ -130,7 +130,7 @@ int type_are_the_same(type_info_t* a, type_info_t* b) {
     if(a->family != b->family) return 0;
 
     switch(a->family) {
-        case TYPE_FAMILY_NATIVE: {
+        case TYPE_FAMILY_BUILTIN: {
             //return strcmp(a->type_data.native.name, b->type_data.native.name) == 0; // <- this should be used if we copy native data type structures
             return a == b; // If we dont copy, but rather return pointers to static structures, then it should be enough to compare pointers
         }
@@ -158,9 +158,9 @@ char* type_to_string(type_info_t* type) {
     if(type == NULL) return NULL;
 
     switch(type->family) {
-        case TYPE_FAMILY_NATIVE: {
-            char* name = malloc(strlen(type->type_data.native.name) + 1);
-            strcpy(name, type->type_data.native.name);
+        case TYPE_FAMILY_BUILTIN: {
+            char* name = malloc(strlen(type->type_data.builtin.name) + 1);
+            strcpy(name, type->type_data.builtin.name);
             return name;
         }
 
@@ -238,7 +238,7 @@ char* type_to_string(type_info_t* type) {
 }
 
 void type_destroy(type_info_t* type) {
-    if(type == NULL || type->family == TYPE_FAMILY_NATIVE) return;
+    if(type == NULL || type->family == TYPE_FAMILY_BUILTIN) return;
 
     switch(type->family) {
         case TYPE_FAMILY_POINTER: {

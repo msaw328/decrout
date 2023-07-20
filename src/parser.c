@@ -30,8 +30,13 @@
 #define ERR_UNEXPECTED_EOF "Unexpected end of file."
 #define ERR_EXPECTED_IDENTIFIER "Expected identifier."
 
-char* _parse_type(lex_tokens_t* tokens, size_t* token_idx, type_info_t** typeinfo) {
+char* _parse_type_inner(lex_tokens_t* tokens, size_t* token_idx, type_info_t** typeinfo) {
     
+}
+
+#define ERR_UNEXPECTED_TOKEN_IN_TYPE "Unexpected token in type declaration."
+char* _parse_type(lex_tokens_t* tokens, size_t* token_idx, type_info_t** typeinfo) {
+    size_t nest_level = 0;
 }
 
 #define ERR_DECLARATION_KEYWORD "Wrong keyword: expected const or decl."
