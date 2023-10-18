@@ -10,7 +10,7 @@ build:
 CFLAGS := -Wall -Werror -Wextra -pedantic -std=c99
 
 # List of source files
-SRC := main.c fileread.c lexer.c types.c
+SRC := main.c fileread.c lexer.c types.c parser.c
 SRC := $(patsubst %,src/%,$(SRC))
 
 # List of object files of the library

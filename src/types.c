@@ -166,23 +166,11 @@ char* type_to_string(type_info_t* type) {
 
         case TYPE_FAMILY_POINTER: {
             char* inner_type = type_to_string(type->type_data.pointer.type);
-            char* name = NULL;
+            char* name = malloc(strlen(inner_type) + 2);
 
-            if(type->type_data.pointer.type->family == TYPE_FAMILY_ROUTINE) { // If its a pointer to a routine, its best to also put it into ()s
-                name = malloc(strlen(inner_type) + 4); // null byte + () + > = 4
-
-                name[0] = '(';
-                memcpy(name + 1, inner_type, strlen(inner_type));
-                name[1 + strlen(inner_type)] = ')';
-                name[2 + strlen(inner_type)] = '>';
-                name[3 + strlen(inner_type)] = '\0';
-            } else {
-                name = malloc(strlen(inner_type) + 2);
-
-                strcpy(name, inner_type);
-                name[strlen(inner_type)] = '>';
-                name[1 + strlen(inner_type)] = '\0';
-            }
+            strcpy(name + 1, inner_type);
+            name[0] = '>';
+            name[1 + strlen(inner_type)] = '\0';
 
             free(inner_type);
             return name;

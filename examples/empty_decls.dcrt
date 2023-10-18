@@ -1,0 +1,5 @@
+const square: >rt[u32, u32]:u32;
+
+decl global_int: i32;
+
+decl complex_type: >>>rt[>>i32, >bool]:>>>void;

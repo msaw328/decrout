@@ -116,8 +116,8 @@ struct ast_statement_t {
     union {
         ast_declaration_t declaration;
         ast_expression_t expression;
-    }
-}
+    } contents;
+};
 
 // Topmost structure of the AST, containing the global scope
 // The global scope may contain only declarations!

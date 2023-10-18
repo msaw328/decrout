@@ -16,8 +16,8 @@
 
 // types - Information about types, utils used for parsing etc.
 
-#ifndef _I_PARSER_H_
-#define _I_PARSER_H_
+#ifndef _I_TYPES_H_
+#define _I_TYPES_H_
 
 #include <stddef.h>
 
