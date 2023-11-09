@@ -16,9 +16,9 @@
 
 // fileread - Wrappers for system file IO
 
-#ifndef _I_FILEREAD_H_
-#define _I_FILEREAD_H_
+#ifndef _I_IO_FILEREAD_H_
+#define _I_IO_FILEREAD_H_
 
-char* read_source_file(char* filename);
+char* io_read_source_file(char* filename);
 
 #endif

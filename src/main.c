@@ -16,41 +16,53 @@
 
 // main - Entry point of the program
 
-#include "lexer.h"
-#include "fileread.h"
-#include "parser.h"
-
-#include "ast.h"
-#include "types.h"
+#include "lexer/lexer.h"
+#include "io/fileread.h"
 
 #include <stdio.h>
 #include <string.h>
 
 int main(int argc, char** argv) {
+#if 1
     if(argc < 2) {
         printf("Usage: %s <filename>\n", argv[0]);
         return 0;
     }
 
-#if 1
-    char* filecontents = read_source_file(argv[1]);
-
-    lex_tokens_t tk = { 0 };
-    tokenize_and_lex(filecontents, &tk);
-
-    ast_t ast = { 0 };
-    parse(&tk, &ast);
-
-    for(size_t idx = 0; idx < ast.num_declarations; idx++) {
-        ast_declaration_t* decl = ast.declarations[idx];
-        char* type_str = type_to_string(decl->type);
-        printf("Decl %zu ::: Const? %d Sym: \"%s\" Type: |%s| Value: %p\n", idx, decl->is_const, decl->symbol, type_str, (void*) decl->value);
-        free(type_str);
+    // Retrieve source code from somewhere (in this case, a file)
+    // Store it as a null-terminated string
+    char* filecontents = io_read_source_file(argv[1]);
+    if(filecontents == NULL) {
+        return 0;
     }
 
-    // TODO: Create cleanup functions instead of these
-    free(tk.tokens);
+    // Initialize a list of tokens
+    lexer_token_list_t list = { 0 };
+    lexer_token_list_init(&list);
+
+    // Process the source code, filling the list of tokens
+    // Token data is copied, where necessary so one may immediately free source code buffer
+    int result = lexer_process_source_code(filecontents, &list);
     free(filecontents);
+
+    // Error checking
+    if(result != 0) {
+        return 0;
+    }
+
+    // Create an iterator over the list's contents.
+    // The iterator is reference-only. The list cannot be destroyed before the end of iteration.
+    lexer_token_iterator_t iter;
+    lexer_token_list_into_iter(&list, &iter);
+
+    // Iterate over the stream of tokens. End of the iterator/list is signaled by returning NULL.
+    lexer_token_t* tk = NULL;
+    while((tk = lexer_token_iterator_next(&iter)) != NULL) {
+        printf("type: %d\ncontents: %s\nline: %zu\nchar: %zu\n\n", tk->type, tk->contents, tk->line_ref, tk->char_ref);
+    }
+
+    // After all tokens have been consumed, destroy the list.
+    lexer_token_list_destroy(&list);
 #endif
 
 #if 0

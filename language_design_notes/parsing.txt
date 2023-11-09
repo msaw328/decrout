@@ -1,0 +1,85 @@
+1. Symbols
+The foundation of the language is the concept of a symbol.
+Symbol is a thing that contains a value of certain type, and may be referenced by a unique name.
+When used as an expression, a symbol's name ALWAYS evaluates to its current value, and is of its type.
+Symbols are usually defined using the 'decl' and 'const' keywords.
+The 'decl' keyword defines a symbol that may change its value in the future.
+The 'const' keyword defines a symbol that must be assigned value during declaration, and it cannot be changed later.
+Symbols are available to the scope they are declared in, as well to any scope inside of it.
+More on the topic of scopes is available in the 'Scopes' section.
+
+Declarations have the following form:
+
+    (decl | const) <symbol name> [: <type>] [= <expression>];
+
+The keyword 'decl' or 'const' is followed by a symbol name (an identifier).
+Symbol name must be followed by either type declaration or a value expression, or both.
+In case of constant symbols a value expression MUST be provided.
+
+Example declarations:
+
+    decl my_symbol: u32 = 48;
+    const my_constant = "Hello";
+
+    const my_invalid_constant: u32; # This is invalid, since constants MUST provide value
+
+Symbol may only be of a "native" type.
+A native type is a type that fits inside of a CPU register on particular architecture.
+This means all primitive types, as well as all pointers, but possibly structural types if they are small enough.
+More on the topic in the 'Types' section.
+
+2. Types
+Primitive types include integer types, booleans etc:
+
+    - u8, u16, u32, u64
+    - i8, i16, i32, i64
+    - char (1 byte)
+    - bool (1 byte)
+    - void (unsized)
+
+(TODO: Add floating point numbers and structures)
+Pointers are denoted by the type they point to.
+>char is a pointer to char, >>u32 is a pointer to a pointer to a u32.
+Additionally, there is a routine type, which may be denoted in the following way:
+
+    rt [<arg types, separated by commas>]: <return type>
+
+Example routine types:
+
+    rt [u32]: u32 # A routine which takes a single argument of type u32 and returns u32
+    rt []: >char # A routine with no arguments, that returns a pointer to char
+
+Every type either has a size in bytes associated with it, or is unsized.
+If type has a size, and its size is smaller than the size of a register on current architecture, a symbol of that type may be declared (native types).
+If types size is larger than a register it cannot be stored in a symbol, but the pointer can be dereferenced as an expression.
+The value of such expression cannot be assigned to a symbol, but it may be used as a part of a bigger expression.
+Unsized types must be referenced through pointers and those pointers CANNOT be dereferenced.
+Because of this, one cannot actually constuct a value of type rt [u32]: u32.
+Instead, this type is used to construct a routine pointer type: >rt [u32]: u32
+Pointers to sized types may be incremented and decremented.
+Adding or subtracting X from a pointer actually modifies the value by X times size of the type it points to.
+Pointers to unsized types cannot be decremented and incremented.
+This means that pointers to unsized types cannot be a part of any expression, with an exception of calling of the routine using () in case of routine pointers.
+
+3. Routines
+In order to define a routine one may use the following syntax:
+
+    rt [ <arg name 1>: <arg type 1>, <arg name 2>: <arg type 2>, ... <arg name n>: <arg type n> ]: <return type> { <body of a routine> }
+
+This definition creates a routine in the compilation output, but also works as an expression.
+The expression evaluates to a routine pointer to the beginning of the routine.
+Because of this, the canonical way of declaring functions in the commonly understood sense is the following:
+
+    const square: >rt [u32]: u32 = rt [ x: u32 ]: u32 {
+        return x * x;
+    };
+
+It is also possible to use 'anonymous functions' this way:
+
+    second_order_function(23, rt [ x: u32 ]: u32 { return x * x; });
+
+Definiton of a routine creates a new scope using the {} brackets.
+More about this topic may be read in the 'Scopes' section.
+
+4. Scopes
+TODO: Describe scopes

@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// lex_token_types - Identification of text tokens in source code
+// token_types - Identification of text tokens in source code
 
-#ifndef _I_LEX_TOKEN_TYPES_H_
-#define _I_LEX_TOKEN_TYPES_H_
+#ifndef _I_LEXER_TOKEN_TYPES_H_
+#define _I_LEXER_TOKEN_TYPES_H_
 
 #include <stdint.h>
 
-enum lex_token_type_t {
+enum lexer_token_type_t {
     TOKEN_RT = 0, // "rt"
     TOKEN_DECL, // "decl"
     TOKEN_RETURN, // "return"
@@ -58,10 +58,21 @@ enum lex_token_type_t {
     TOKEN_COMMA, // ","
 
     TOKEN_LITERAL_STRING, // any string literal of type "..."
-    TOKEN_LITERAL_NUMERIC, // any numeric literal like 1234 or 0x567
+    TOKEN_LITERAL_NUMERIC_BIN, // 0b100101
+    TOKEN_LITERAL_NUMERIC_DEC, // 79234797
+    TOKEN_LITERAL_NUMERIC_OCT, // 06723545
+    TOKEN_LITERAL_NUMERIC_HEX, // 0xaf56BD
     TOKEN_LITERAL_CHAR, // any character literal like 'k' or '\x96'
     TOKEN_IDENTIFIER // any identifier - the most loose category of tokens
 };
-typedef enum lex_token_type_t lex_token_type_t;
+typedef enum lexer_token_type_t lexer_token_type_t;
+
+#define TOKEN_TYPE_IS_DYNAMIC(type) (type == TOKEN_LITERAL_STRING || \
+                                    type == TOKEN_LITERAL_NUMERIC_BIN || \
+                                    type == TOKEN_LITERAL_NUMERIC_OCT || \
+                                    type == TOKEN_LITERAL_NUMERIC_DEC || \
+                                    type == TOKEN_LITERAL_NUMERIC_HEX || \
+                                    type == TOKEN_LITERAL_CHAR || \
+                                    type == TOKEN_IDENTIFIER)
 
 #endif

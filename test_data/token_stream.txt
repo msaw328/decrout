@@ -1,0 +1,3 @@
+# Useful for testing lexing/tokenization
+0x123AF<>"test \" hello\\"== 'char" \' literal'
+const 01234@ 0xaf 0b10010

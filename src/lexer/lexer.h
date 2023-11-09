@@ -14,26 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// fileread - Wrappers for system file IO
+// lexer - Lexing functionality, recognition of tokens
 
-#include "fileread.h"
+#ifndef _I_LEXER_LEXER_H_
+#define _I_LEXER_LEXER_H_
 
-#include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
+#include <stddef.h>
 
-char* read_source_file(char* filename) {
-    struct stat statbuf = { 0 };
-    stat(filename, &statbuf);
+#include "token_list.h"
 
-    size_t filesize = statbuf.st_size;
-    char* filecontents = malloc(filesize + 1);
+// Walks through a null-terminated source code string pointed to by
+// src_str and returns a token list (structure pointed to by list is modified)
+//
+// Return value: 0 if ok, 1 if error
+int lexer_process_source_code(char* src_str, lexer_token_list_t* list);
 
-    FILE* infile = fopen(filename, "r");
-    fread(filecontents, 1, filesize, infile);
-    fclose(infile);
-    filecontents[filesize] = '\0';
-
-    return filecontents;
-}
+#endif

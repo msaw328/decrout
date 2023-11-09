@@ -1,0 +1,38 @@
+All white space is skipped entirely, as are any and all characters following a # until the end of the line (including the #).
+The newlines are only \n, CRLF are not supported (maybe in the future).
+
+Tokens may be either dynamic or static:
+
+Dynamic tokens have some general form, but their specific contents must be stored in the lexer_token_t data structure.
+Those include:
+ - Numeric literals (binary/octal/decimal/hexadecimal)
+ - String/Char literals
+ - Identifiers
+
+Static tokens are predefined and statically stored in the compiler, so they do not need their contents stored in the structure.
+Those include:
+ - Keyword tokens
+ - Non-keyword tokens
+
+The "Keyword" category for the most part is reserved for static tokens which could be mistaken for identifiers if not for the category.
+Those include the keywords (in the classical sense) "const", "decl", "rt", "return".
+
+Dynamic tokens, as well as keyword static tokens must be immediately followed by either whitespace, end of file or a non-keyword token.
+Non-keyword tokens do not have that requirement. Keep in mind that this is only a simplified rule for tokenization and lexing.
+Many chains of operators which are valid according to this rule may end up being illegal in the language itself.
+Also, end of file will most likely be considered illegal immediately following many (maybe all of them) keywords.
+For tokenizatoin purposes, however, this is OK, and any errors stemming from this will be caught during parsing.
+
+Hexadecimal literals start with either 0x or 0X and may contain both lower- and uppercase letters in both cases (0x12AFc and 0X8ff are both valid).
+Decimal literals start with any digit that is not 0 and contain only digits from 0 to 9.
+Octal literals start with a 0 and contain only digits from 0 to 7. Yes, '0' is an octal literal, but the value checks out soooo...
+Binary literals start with either 0b or 0B and may contain only zeros and ones: 0b101001010.
+
+String literals start with a quote " and end with one too. Everything besides a quote is allowed inside (excluding probably non-printable ascii but idk).
+Escape sequences and whatnot are interpreted during parsing, so for lexing the only two sequences that need special treatment are \" and \\.
+
+Char literals are like string literals, except a quote is swapped for an apostrophe.
+
+Identifiers are everything else - could be type names, symbol names. If a token does not match anything else, but meets criteria for being an identifier,
+it is considered to be one. Identifiers may only contain upper- and lowercase ascii characters, digits 0-9 and an underscore.
+Identifiers may contain digits but can not start with one, as they would be mistaken for numeric literals during tokenization.

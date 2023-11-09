@@ -14,32 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// lexer - Lexing functionality, recognition of tokens
+// fileread - Wrappers for system file IO
 
-#ifndef _I_LEXER_H_
-#define _I_LEXER_H_
+#include "fileread.h"
 
+#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
+#include <sys/stat.h>
+#include <errno.h>
 
-#include "lex_token_types.h"
+char* io_read_source_file(char* filename) {
+    struct stat statbuf = { 0 };
+    stat(filename, &statbuf);
 
-// Token has a type, and if the type might have varying contents,
-// the contents are saved in a malloc'ed buffer in token_contents
-struct lex_token_t {
-    lex_token_type_t type;
-    char* token_contents;
-    size_t line_ref;
-};
-typedef struct lex_token_t lex_token_t;
+    size_t filesize = statbuf.st_size;
+    char* filecontents = malloc(filesize + 1);
 
-struct lex_tokens_t {
-    size_t num_tokens;
-    lex_token_t* tokens;
-};
-typedef struct lex_tokens_t lex_tokens_t;
+    FILE* infile = fopen(filename, "r");
+    if(infile == NULL) {
+        fprintf(stderr, "[io] Error opening source file %s: %s\n", filename, strerror(errno));
+        return NULL;
+    }
 
-int tokenize_and_lex(char* src_str, lex_tokens_t* list);
-void tokens_clear(lex_tokens_t* list);
+    fread(filecontents, 1, filesize, infile);
+    fclose(infile);
+    filecontents[filesize] = '\0';
 
-#endif
+    return filecontents;
+}
