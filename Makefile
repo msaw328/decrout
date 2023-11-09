@@ -1,5 +1,7 @@
 .PHONY: all dirs clear
 
+PROJECT_NAME := dcrtc
+
 .DEFAULT_GOAL := all
 
 # C compiler flags
@@ -17,14 +19,14 @@ build/bin/%.o: src/%.c
 	$(CC) -c $(CFLAGS) $^ -o $@
 
 # All object files = 1 library file
-build/bin/comp: $(OBJ)
+build/bin/$(PROJECT_NAME): $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@
 
 # Phony targets below this point# build directory
 dirs:
 	mkdir -p $(dir $(OBJ))
 
-all: dirs build/bin/comp
+all: dirs build/bin/$(PROJECT_NAME)
 
 clear:
 	rm -rf build
