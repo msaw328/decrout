@@ -82,4 +82,7 @@
     free(l->arr);   \
     }
 
+#define UTILS_LIST_GENERIC_LENGTH(list_ptr) (list_ptr->num_elements)
+#define UTILS_LIST_GENERIC_GET(list_ptr, index) ((index < list_ptr->num_elements) ? &(list_ptr->arr[index]) : NULL)
+
 #endif

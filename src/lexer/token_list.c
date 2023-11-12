@@ -41,8 +41,8 @@ void lexer_token_list_into_iter(lexer_token_list_t* l, lexer_token_iterator_t* i
 
 // Returns pointer to the next token structure, or NULL when out of tokens
 lexer_token_t* lexer_token_iterator_next(lexer_token_iterator_t* iter) {
-    if(iter->next_index < iter->list->num_elements) {
-        lexer_token_t* tk = &(iter->list->arr[iter->next_index]);
+    if(iter->next_index < UTILS_LIST_GENERIC_LENGTH(iter->list)) {
+        lexer_token_t* tk = UTILS_LIST_GENERIC_GET(iter->list, iter->next_index);
         iter->next_index += 1;
         return tk;
     } else {
