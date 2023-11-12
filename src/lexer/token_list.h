@@ -19,12 +19,16 @@
 #ifndef _I_LEXER_TOKEN_LIST_H_
 #define _I_LEXER_TOKEN_LIST_H_
 
-#include <stddef.h>
-
 #include "token_types.h"
+
+#include "utils/list.h"
+
+#include <stddef.h>
 
 // Token has a type. Some types might have varying contents (stinrg literals, numeric literals).
 // If that is the case, the contents are saved in a malloc'ed buffer in token_contents.
+// Other times, for a static token, the contents buffer is not used.
+// During cleanup of the token structure, the TOKEN_TYPE_IS_DYNAMIC macro from token_types.h should be used.
 struct lexer_token_t {
     lexer_token_type_t type;    // Type of a token (token_tyes.h)
     char* contents;             // If a token has dynamic contents, malloc'ed buffer
@@ -33,13 +37,7 @@ struct lexer_token_t {
 };
 typedef struct lexer_token_t lexer_token_t;
 
-// A list of tokens, it is created from a memory buffer containing source code
-struct lexer_token_list_t {
-    size_t num_tokens;          // Number of tokens in the list
-    size_t alloc_tokens;        // Number of allocated tokens in array
-    lexer_token_t* arr;         // Malloc'ed array of tokens, of size alloc_tokens
-};
-typedef struct lexer_token_list_t lexer_token_list_t;
+UTILS_LIST_MAKE_DECLARATION(lexer_token, lexer_token_t)
 
 // An iterator over a list of tokens
 struct lexer_token_iterator_t {
@@ -47,15 +45,6 @@ struct lexer_token_iterator_t {
     size_t next_index;          // Keeps track of the next index to retrieve
 };
 typedef struct lexer_token_iterator_t lexer_token_iterator_t;
-
-// Initialize the list to sensible defaults
-void lexer_token_list_init(lexer_token_list_t* l);
-
-// Append a new token to the list (data is copied from the structure)
-void lexer_token_list_append(lexer_token_list_t* l, lexer_token_t* tk);
-
-// Destroy dynamic memory associated with the list
-void lexer_token_list_destroy(lexer_token_list_t* l);
 
 // Creates a reference-only iterator over the list
 // WARNING the created iterator only references the list, do not destroy it before finishing iteration
