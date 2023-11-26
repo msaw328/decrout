@@ -1,3 +1,3 @@
 # Useful for testing lexing/tokenization
-0x123AF<>"test \" hello\\"== 'char" \' literal'
+0x123AF<>"test \" hello\\"== 'char" \' literal' # comment! "test"
 const 01234@ 0xaf 0b10010

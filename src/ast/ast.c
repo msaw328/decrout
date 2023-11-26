@@ -14,14 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// parser - Parsing functionality, constructing the AST from a stream of lexer tokens
-
-#ifndef _I_PARSER_H_
-#define _I_PARSER_H_
+// ast - AST structures, used during parsing
 
 #include "ast.h"
-#include "lexer.h"
 
-void parse(lex_tokens_t* tokens, ast_t* ast);
+#include <stdlib.h>
 
-#endif
+#include "decl_list.h"
+
+ast_global_scope_t* ast_global_scope_make() {
+    ast_global_scope_t* ast = malloc(sizeof(ast_global_scope_t));
+
+    ast->decls = ast_decl_list_make();
+
+    return ast;
+}
+
+void ast_global_scope_destroy(ast_global_scope_t* ast) {
+    ast_decl_list_destroy(ast->decls);
+    free(ast);
+}

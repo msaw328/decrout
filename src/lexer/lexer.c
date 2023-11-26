@@ -243,7 +243,7 @@ ssize_t _determine_token_length_and_type(char* src_str, lexer_token_type_t* toke
 char* _read_next_token(char* src_str, size_t* line_counter_ptr, size_t* char_counter_ptr, lexer_token_t* next_token) {
     ssize_t token_length_try = _determine_token_length_and_type(src_str, &(next_token->type));
     if(token_length_try < 0) {
-        fprintf(stderr, "[lexer] Error at line %zu char %zu: Can't determine token length and/or type\n", *line_counter_ptr, *char_counter_ptr);
+        fprintf(stderr, "[lexer] Error in line %zu char %zu: Can't determine token length and/or type\n", *line_counter_ptr, *char_counter_ptr);
         return NULL;
     }
 
@@ -327,7 +327,7 @@ int lexer_process_source_code(char* src_str, lexer_token_list_t* list) {
         // If NULL is returned it means there was a problem reading a token
         // (Possibly string without an ending " or something similar)
         if(src_str == NULL) {
-            fprintf(stderr, "[lexer] Error at line %zu char %zu: Can't read token\n", line_counter, char_counter);
+            fprintf(stderr, "[lexer] Error in line %zu char %zu: Can't read token\n", line_counter, char_counter);
             return 1;
         }
 

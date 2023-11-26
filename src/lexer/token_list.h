@@ -37,7 +37,7 @@ struct lexer_token_t {
 };
 typedef struct lexer_token_t lexer_token_t;
 
-UTILS_LIST_MAKE_DECLARATION(lexer_token, lexer_token_t)
+UTILS_LIST_MAKE_DECLARATION(lexer_token, struct lexer_token_t)
 
 // An iterator over a list of tokens
 struct lexer_token_iterator_t {
@@ -51,6 +51,12 @@ typedef struct lexer_token_iterator_t lexer_token_iterator_t;
 void lexer_token_list_into_iter(lexer_token_list_t* l, lexer_token_iterator_t* iter);
 
 // Returns pointer to the next token structure, or NULL when out of tokens
-lexer_token_t* lexer_token_iterator_next(lexer_token_iterator_t* iter);
+lexer_token_t* lexer_token_iter_next(lexer_token_iterator_t* iter);
+
+// Returns 1 if theres a next element or 0 if iter empty
+int lexer_token_iter_isnt_empty(lexer_token_iterator_t* iter);
+
+// Return next token without removing it from the iterator (or NULL)
+lexer_token_t* lexer_token_iter_peek(lexer_token_iterator_t* iter);
 
 #endif

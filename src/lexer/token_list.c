@@ -24,13 +24,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Static tokens do not use tk->contents to store their contents (since theyre predefined anyways)
 void __lexer_token_cleanup(lexer_token_t* tk) {
     if(TOKEN_TYPE_IS_DYNAMIC(tk->type)) {
         free(tk->contents);
     };
 }
 
-UTILS_LIST_MAKE_IMPLEMENTATION(lexer_token, lexer_token_t, 32, __lexer_token_cleanup)
+UTILS_LIST_MAKE_IMPLEMENTATION(lexer_token, struct lexer_token_t, 32, __lexer_token_cleanup)
 
 // Creates a reference-only iterator over the list
 // WARNING the created iterator only references the list, do not destroy it before finishing iteration
@@ -40,10 +41,24 @@ void lexer_token_list_into_iter(lexer_token_list_t* l, lexer_token_iterator_t* i
 }
 
 // Returns pointer to the next token structure, or NULL when out of tokens
-lexer_token_t* lexer_token_iterator_next(lexer_token_iterator_t* iter) {
+lexer_token_t* lexer_token_iter_next(lexer_token_iterator_t* iter) {
     if(iter->next_index < UTILS_LIST_GENERIC_LENGTH(iter->list)) {
         lexer_token_t* tk = UTILS_LIST_GENERIC_GET(iter->list, iter->next_index);
         iter->next_index += 1;
+        return tk;
+    } else {
+        return NULL;
+    }
+}
+
+// Returns 1 if theres a next element or 0 if iter empty
+int lexer_token_iter_isnt_empty(lexer_token_iterator_t* iter) {
+    return iter->next_index < UTILS_LIST_GENERIC_LENGTH(iter->list);
+}
+
+lexer_token_t* lexer_token_iter_peek(lexer_token_iterator_t* iter) {
+    if(iter->next_index < UTILS_LIST_GENERIC_LENGTH(iter->list)) {
+        lexer_token_t* tk = UTILS_LIST_GENERIC_GET(iter->list, iter->next_index);
         return tk;
     } else {
         return NULL;

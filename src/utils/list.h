@@ -36,12 +36,12 @@
         inner_type* arr;            \
     };                              \
     typedef struct type_prefix##_list_t type_prefix##_list_t;   \
-    void type_prefix##_list_init(lexer_token_list_t* l);        \
-    void type_prefix##_list_append(lexer_token_list_t* l, inner_type* tk);   \
-    void type_prefix##_list_destroy(lexer_token_list_t* l);
+    type_prefix##_list_t* type_prefix##_list_make();        \
+    void type_prefix##_list_append(type_prefix##_list_t* l, inner_type* tk);   \
+    void type_prefix##_list_destroy(type_prefix##_list_t* l);
 
 // Implementation details:
-// list_init() initializes the dynamic list to the default_size length
+// list_make() dynamically allocates a list and returns a pointer to it (has default_size capacity at beginning)
 // each element is of type inner_type
 // the default grow strategy is to increase the capacity 2x
 // list_append() takes a pointer to a inner_type structure and COPIES its contents into the array
@@ -58,10 +58,12 @@
         l->arr = new_arr;   \
     }   \
     \
-    void type_prefix##_list_init(type_prefix##_list_t* l) { \
+    type_prefix##_list_t* type_prefix##_list_make() { \
+        type_prefix##_list_t* l = malloc(sizeof(type_prefix##_list_t)); \
         l->num_elements = 0;  \
         l->alloc_elements = (size_t) default_size;  \
         l->arr = malloc(default_size * sizeof(inner_type)); \
+        return l; \
     }   \
     \
     void type_prefix##_list_append(type_prefix##_list_t* l, inner_type* elem) { \
@@ -72,14 +74,16 @@
         l->num_elements += 1;   \
     }   \
     void type_prefix##_list_destroy(type_prefix##_list_t* l) {  \
+        if(l == NULL) return; \
         void (*cleanup_callback)(inner_type*) = elem_destroy_callback;  \
         if(cleanup_callback != NULL) {  \
-            for(size_t i = 0; i < l->alloc_elements; i++) { \
+            for(size_t i = 0; i < l->num_elements; i++) { \
                 inner_type* elem = &(l->arr[i]);    \
                 cleanup_callback(elem); \
             };  \
         };  \
-    free(l->arr);   \
+        free(l->arr);   \
+        free(l);    \
     }
 
 #define UTILS_LIST_GENERIC_LENGTH(list_ptr) (list_ptr->num_elements)

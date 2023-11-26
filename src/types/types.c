@@ -21,7 +21,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-// An array defining basic native types
+#include "utils/list.h"
+
+// An array defining basic builtin types
 static type_info_t _builtin_types[] = {
     {
         .family = TYPE_FAMILY_BUILTIN,
@@ -93,6 +95,7 @@ static type_info_t _builtin_types[] = {
 
 #define BUILTIN_TYPES_NUM (sizeof(_builtin_types) / sizeof(_builtin_types[0]))
 
+// returns static struct ptr
 type_info_t* type_get_builtin_by_name(char* name) {
     for(size_t i = 0; i < BUILTIN_TYPES_NUM; i++) {
         type_info_t* ptr = _builtin_types + i;
@@ -105,6 +108,7 @@ type_info_t* type_get_builtin_by_name(char* name) {
     return NULL;
 }
 
+// returns dynamic struct ptr
 type_info_t* type_make_pointer_to(type_info_t* type) {
     type_info_t* new_type = malloc(sizeof(type_info_t));
 
@@ -113,12 +117,12 @@ type_info_t* type_make_pointer_to(type_info_t* type) {
     return new_type;
 }
 
-type_info_t* type_make_routine(size_t arg_c, type_info_t** args, type_info_t* ret) {
+// returns dynamic struct ptr, args has to be dynamically allocated by caller
+type_info_t* type_make_routine(type_info_list_t* args, type_info_t* ret) {
     type_info_t* new_type = malloc(sizeof(type_info_t));
 
     new_type->family = TYPE_FAMILY_ROUTINE;
-    new_type->type_data.routine.arg_count = arg_c;
-    new_type->type_data.routine.arg_types = args;
+    new_type->type_data.routine.args = args;
     new_type->type_data.routine.return_type = ret;
 
     return new_type;
@@ -131,7 +135,7 @@ int type_are_the_same(type_info_t* a, type_info_t* b) {
 
     switch(a->family) {
         case TYPE_FAMILY_BUILTIN: {
-            //return strcmp(a->type_data.native.name, b->type_data.native.name) == 0; // <- this should be used if we copy native data type structures
+            //return strcmp(a->type_data.native.name, b->type_data.native.name) == 0; // <- this should be used if we copy builtin data type structures
             return a == b; // If we dont copy, but rather return pointers to static structures, then it should be enough to compare pointers
         }
 
@@ -140,13 +144,23 @@ int type_are_the_same(type_info_t* a, type_info_t* b) {
         }
 
         case TYPE_FAMILY_ROUTINE: {
-            if(a->type_data.routine.arg_count != b->type_data.routine.arg_count) return 0;
+            type_info_routine_t* a_rt = &(a->type_data.routine);
+            type_info_routine_t* b_rt = &(b->type_data.routine);
 
-            for(size_t i = 0; i < a->type_data.routine.arg_count; i++) {
-                if(!type_are_the_same(a->type_data.routine.arg_types[i], b->type_data.routine.arg_types[i])) return 0;
+            int a_args_empty = (a_rt->args == NULL) || (UTILS_LIST_GENERIC_LENGTH(a_rt->args) == 0);
+            int b_args_empty = (b_rt->args == NULL) || (UTILS_LIST_GENERIC_LENGTH(b_rt->args) == 0);
+            if(a_args_empty && b_args_empty) return 1;
+
+            if(a_args_empty) return 0;
+            if(b_args_empty) return 0;
+
+            if(UTILS_LIST_GENERIC_LENGTH(a_rt->args) != UTILS_LIST_GENERIC_LENGTH(b_rt->args)) return 0;
+
+            for(size_t i = 0; i < UTILS_LIST_GENERIC_LENGTH(a_rt->args); i++) {
+                if(!type_are_the_same(UTILS_LIST_GENERIC_GET(a_rt->args, i), UTILS_LIST_GENERIC_GET(a_rt->args, i))) return 0;
             }
 
-            return a->type_data.routine.return_type == b->type_data.routine.return_type;
+            return a_rt->return_type == b_rt->return_type;
         }
 
         default:
@@ -154,6 +168,7 @@ int type_are_the_same(type_info_t* a, type_info_t* b) {
     }
 }
 
+// Walks through the type tree and builds a string buffer
 char* type_to_string(type_info_t* type) {
     if(type == NULL) return NULL;
 
@@ -177,14 +192,21 @@ char* type_to_string(type_info_t* type) {
         }
 
         case TYPE_FAMILY_ROUTINE: {
-            size_t args_string_length = (type->type_data.routine.arg_count - 1) * 2; // In the arg list, args are separated by ", "
-            for(size_t i = 0; i < type->type_data.routine.arg_count; i++) {
-                char* arg_type_name = type_to_string(type->type_data.routine.arg_types[i]);
-                args_string_length += strlen(arg_type_name);
-                free(arg_type_name);
+            // TODO: This traverses the arg list twice, maybe its not needed?
+            type_info_routine_t* rt = &(type->type_data.routine);
+
+            size_t args_string_length = 0;
+            if(rt->args != NULL) {
+                args_string_length = (UTILS_LIST_GENERIC_LENGTH(rt->args) - 1) * 2; // In the arg list, args are separated by ", "
+
+                for(size_t i = 0; i < UTILS_LIST_GENERIC_LENGTH(rt->args); i++) {
+                    char* arg_type_name = type_to_string(UTILS_LIST_GENERIC_GET(rt->args, i));
+                    args_string_length += strlen(arg_type_name);
+                    free(arg_type_name);
+                }
             }
 
-            char* return_type_str = type_to_string(type->type_data.routine.return_type);
+            char* return_type_str = type_to_string(rt->return_type);
             size_t ret_type_len = strlen(return_type_str);
             free(return_type_str);
 
@@ -193,27 +215,35 @@ char* type_to_string(type_info_t* type) {
 
             size_t offset = 0;
 
-            memcpy(name + offset, "rt [ ", 5);
-            offset += 5;
+            memcpy(name + offset, "rt ", 3);
+            offset += 3;
 
-            for(size_t i = 0; i < type->type_data.routine.arg_count; i++) {
-                char* arg_type_name = type_to_string(type->type_data.routine.arg_types[i]);
+            if(rt->args != NULL) {
+                name[offset] = '[';
+                offset++;
 
-                strcpy(name + offset, arg_type_name);
-                offset += strlen(arg_type_name);
+                for(size_t i = 0; i < UTILS_LIST_GENERIC_LENGTH(rt->args); i++) {
+                    char* arg_type_name = type_to_string(UTILS_LIST_GENERIC_GET(rt->args, i));
 
-                if(i != type->type_data.routine.arg_count - 1) {
-                    memcpy(name + offset, ", ", 2);
-                    offset += 2;
+                    strcpy(name + offset, arg_type_name);
+                    offset += strlen(arg_type_name);
+
+                    if(i != UTILS_LIST_GENERIC_LENGTH(rt->args) - 1) {
+                        memcpy(name + offset, ", ", 2);
+                        offset += 2;
+                    }
+
+                    free(arg_type_name);
                 }
 
-                free(arg_type_name);
+                name[offset] = ']';
+                offset++;
             }
 
-            memcpy(name + offset, " ]: ", 4);
-            offset += 4;
+            memcpy(name + offset, ": ", 2);
+            offset += 2;
 
-            char* return_type_name = type_to_string(type->type_data.routine.return_type);
+            char* return_type_name = type_to_string(rt->return_type);
             strcpy(name + offset, return_type_name);
             free(return_type_name);
 
@@ -225,29 +255,3 @@ char* type_to_string(type_info_t* type) {
     }
 }
 
-void type_destroy(type_info_t* type) {
-    if(type == NULL || type->family == TYPE_FAMILY_BUILTIN) return;
-
-    switch(type->family) {
-        case TYPE_FAMILY_POINTER: {
-            type_destroy(type->type_data.pointer.type);
-            break;
-        }
-
-        case TYPE_FAMILY_ROUTINE: {
-            for(size_t i = 0; i < type->type_data.routine.arg_count; i++) {
-                type_destroy(type->type_data.routine.arg_types[i]);
-            }
-
-            type_destroy(type->type_data.routine.return_type);
-            break;
-        }
-
-        default:
-            break;
-    }
-
-    free(type);
-
-    return;
-}

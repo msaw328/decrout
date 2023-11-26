@@ -16,16 +16,39 @@
 
 // main - Entry point of the program
 
-#include "lexer/lexer.h"
 #include "io/fileread.h"
+#include "lexer/lexer.h"
+#include "parser/parser.h"
+#include "types/types.h"
+#include "utils/list.h"
+
+#include "version.h"
 
 #include <stdio.h>
 #include <string.h>
 
+void print_usage_and_exit(char** argv) {
+    puts("dcrtc - Decrout compiler");
+    printf("Usage: %s <filename>\n", argv[0]);
+    printf("%s -h for help, %s -v for version information\n", argv[0], argv[0]);
+    exit(0);
+}
+
+void print_version_and_exit() {
+    puts("dcrtc - Decrout compiler");
+    puts("Copyright (C) 2023  Maciej Sawka <maciejsawka@gmail.com> <msaw328@kretes.xyz>");
+    printf("Commit id: %s\nBuild date: %s\n\n", DCRTC_COMMIT_ID, DCRTC_BUILD_DATE);
+}
+
 int main(int argc, char** argv) {
 #if 1
-    if(argc < 2) {
-        printf("Usage: %s <filename>\n", argv[0]);
+    if(argc < 2 || strcmp(argv[1], "-h") == 0) {
+        print_usage_and_exit(argv);
+        return 0;
+    }
+
+    if(strcmp(argv[1], "-v") == 0) {
+        print_version_and_exit();
         return 0;
     }
 
@@ -37,12 +60,11 @@ int main(int argc, char** argv) {
     }
 
     // Initialize a list of tokens
-    lexer_token_list_t list = { 0 };
-    lexer_token_list_init(&list);
+    lexer_token_list_t* list = lexer_token_list_make();
 
     // Process the source code, filling the list of tokens
     // Token data is copied, where necessary so one may immediately free source code buffer
-    int result = lexer_process_source_code(filecontents, &list);
+    int result = lexer_process_source_code(filecontents, list);
     free(filecontents);
 
     // Error checking
@@ -50,37 +72,32 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    // Create an iterator over the list's contents.
-    // The iterator is reference-only. The list cannot be destroyed before the end of iteration.
-    lexer_token_iterator_t iter;
-    lexer_token_list_into_iter(&list, &iter);
-
-    // Iterate over the stream of tokens. End of the iterator/list is signaled by returning NULL.
-    lexer_token_t* tk = NULL;
-    while((tk = lexer_token_iterator_next(&iter)) != NULL) {
-        printf("type: %d\ncontents: %s\nline: %zu\nchar: %zu\n\n", tk->type, tk->contents, tk->line_ref, tk->char_ref);
-    }
+    ast_global_scope_t* ast = ast_global_scope_make();
+    result = parser_process_token_list(list, ast);
 
     // After all tokens have been consumed, destroy the list.
-    lexer_token_list_destroy(&list);
-#endif
+    lexer_token_list_destroy(list);
 
-#if 0
-    size_t arg_count = 3;
+    // Error checking
+    if(result != 0) {
+        return 0;
+    }
 
-    type_info_t** arg_types = malloc(sizeof(type_info_t*) * arg_count);
-    arg_types[0] = type_get_builtin_by_name("u32");
-    arg_types[1] = type_make_pointer_to(type_get_builtin_by_name("u32"));
-    arg_types[2] = type_make_pointer_to(type_make_pointer_to(type_get_builtin_by_name("u64")));
+    ast_decl_list_t* decls = ast->decls;
+    for(size_t i = 0; i < UTILS_LIST_GENERIC_LENGTH(decls); i++) {
+        ast_decl_t* decl = UTILS_LIST_GENERIC_GET(decls, i);
+        char* type_str = type_to_string(decl->type);
+        printf("Decl %zu (ref %zu:%zu) ::: | Symbol: %s | Type: %s | Is const: %d |\n", 
+            i,
+            decl->line_ref,
+            decl->char_ref,
+            decl->symbol,
+            type_str,
+            decl->is_const
+        );
+        free(type_str);
+    }
 
-    type_info_t* return_type = type_make_pointer_to(type_get_builtin_by_name("u32"));
-
-    type_info_t* routine_type = type_make_routine(arg_count, arg_types, return_type);
-    type_info_t* total_type = type_make_pointer_to(routine_type);
-    char* type_name = type_to_string(total_type);
-    printf("Type name: %s\n", type_name);
-
-    type_destroy(total_type);
-    free(type_name);
+    ast_global_scope_destroy(ast);
 #endif
 }

@@ -48,6 +48,7 @@ Example routine types:
 
     rt [u32]: u32 # A routine which takes a single argument of type u32 and returns u32
     rt []: >char # A routine with no arguments, that returns a pointer to char
+    rt : void # A routine with no arguments and no return value
 
 Every type either has a size in bytes associated with it, or is unsized.
 If type has a size, and its size is smaller than the size of a register on current architecture, a symbol of that type may be declared (native types).
