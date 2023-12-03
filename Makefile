@@ -8,7 +8,8 @@ BUILD_DATE := $(shell date --rfc-3339=seconds)
 .DEFAULT_GOAL := all
 
 # C compiler flags
-CFLAGS := -DDCRTC_COMMIT_ID="\"$(COMMIT_ID)\"" -DDCRTC_BUILD_DATE="\"$(BUILD_DATE)\"" -Wall -Werror -Wextra -pedantic -std=c99 -Isrc/
+# One can define more flags using make MORE_FLAGS="..." all
+CFLAGS := -DDCRTC_COMMIT_ID="\"$(COMMIT_ID)\"" -DDCRTC_BUILD_DATE="\"$(BUILD_DATE)\"" $(MORE_FLAGS) -Wall -Werror -Wextra -pedantic -std=c99 -Isrc/
 
 # List of source files
 SRC := main.c io/fileread.c lexer/lexer.c lexer/token_list.c types/types.c types/type_list.c ast/ast.c ast/decl_list.c parser/parser.c parser/parse_types.c

@@ -309,9 +309,6 @@ int lexer_process_source_code(char* src_str, lexer_token_list_t* list) {
     size_t line_counter = 1;
     size_t char_counter = 1;
 
-    // Temporary buffer for token data, in the end the list will own the data
-    lexer_token_t next_token = { 0 };
-
     while(1) {
         // Skip all the whitespace, comments etc
         // Return the address of first byte of the next token
@@ -320,19 +317,23 @@ int lexer_process_source_code(char* src_str, lexer_token_list_t* list) {
         // If NULL is returned it means there is no more tokens, return
         if(src_str == NULL) break;
 
+        // Temporary buffer for token data, in the end the list will own the data
+        lexer_token_t* next_token = malloc(sizeof(lexer_token_t));
+
         // Otherwise return the next token - read the chars, detemrine type and fill struct
         // Return the address of first byte after the last char of the processed token
-        src_str = _read_next_token(src_str, &line_counter, &char_counter, &next_token);
+        src_str = _read_next_token(src_str, &line_counter, &char_counter, next_token);
 
         // If NULL is returned it means there was a problem reading a token
         // (Possibly string without an ending " or something similar)
         if(src_str == NULL) {
             fprintf(stderr, "[lexer] Error in line %zu char %zu: Can't read token\n", line_counter, char_counter);
+            free(next_token);
             return 1;
         }
 
         // If all is good, append the new token to the list
-        lexer_token_list_append(list, &next_token);
+        lexer_token_list_append(list, next_token);
     }
 
     return 0;

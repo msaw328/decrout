@@ -30,6 +30,7 @@
 void ast_decl_destroy(ast_decl_t* decl) {
     type_destroy(decl->type);
     free(decl->symbol);
+    free(decl);
 }
 
 UTILS_LIST_MAKE_IMPLEMENTATION(ast_decl, struct ast_decl_t, 8, ast_decl_destroy)

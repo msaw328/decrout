@@ -29,6 +29,7 @@ void __lexer_token_cleanup(lexer_token_t* tk) {
     if(TOKEN_TYPE_IS_DYNAMIC(tk->type)) {
         free(tk->contents);
     };
+    free(tk);
 }
 
 UTILS_LIST_MAKE_IMPLEMENTATION(lexer_token, struct lexer_token_t, 32, __lexer_token_cleanup)

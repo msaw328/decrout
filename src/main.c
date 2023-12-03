@@ -75,11 +75,19 @@ int main(int argc, char** argv) {
     ast_global_scope_t* ast = ast_global_scope_make();
     result = parser_process_token_list(list, ast);
 
+#if 0
+    for(size_t i = 0; i < UTILS_LIST_GENERIC_LENGTH(list); i++) {
+        lexer_token_t* tk = UTILS_LIST_GENERIC_GET(list, i);
+        printf("token %zu: type = %d, contents = %p\n", i, tk->type, (void*) tk->contents);
+    }
+#endif
+
     // After all tokens have been consumed, destroy the list.
     lexer_token_list_destroy(list);
 
     // Error checking
     if(result != 0) {
+        ast_global_scope_destroy(ast);
         return 0;
     }
 

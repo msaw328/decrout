@@ -28,7 +28,7 @@
 #include "ast/ast.h"
 
 #include "parse_types.h"
-
+#include <stdio.h>
 // Assumes iterator points to the first token of a declaration
 // Consumes tokens until declaration is fully described
 // Returns NULL if error, or new declaration if ok
@@ -80,6 +80,7 @@ ast_decl_t* parser_parse_declaration(lexer_token_iterator_t* iter) {
 
     if(token == NULL) {
         fprintf(stderr, "[parser] Error in declaration in line %zu char %zu: Unexpected end of file.\n", new_decl->line_ref, new_decl->char_ref);
+        free(new_decl->symbol);
         free(new_decl);
         return NULL;
     }
@@ -90,6 +91,7 @@ ast_decl_t* parser_parse_declaration(lexer_token_iterator_t* iter) {
 
         if(!lexer_token_iter_isnt_empty(iter)) {
             fprintf(stderr, "[parser] Error in declaration in line %zu char %zu: Unexpected end of file.\n", new_decl->line_ref, new_decl->char_ref);
+            free(new_decl->symbol);
             free(new_decl);
             return NULL;
         }
@@ -98,6 +100,7 @@ ast_decl_t* parser_parse_declaration(lexer_token_iterator_t* iter) {
         new_decl->type = parser_parse_type(iter);
         if(new_decl->type == NULL) {
             fprintf(stderr, "[parser] Error in declaration in line %zu char %zu: Cannot parse type.\n", new_decl->line_ref, new_decl->char_ref);
+            free(new_decl->symbol);
             free(new_decl);
             return NULL;
         }
@@ -110,6 +113,8 @@ ast_decl_t* parser_parse_declaration(lexer_token_iterator_t* iter) {
 
     if(token == NULL) {
         fprintf(stderr, "[parser] Error in declaration in line %zu char %zu: Unexpected end of file.\n", new_decl->line_ref, new_decl->char_ref);
+        type_destroy(new_decl->type);
+        free(new_decl->symbol);
         free(new_decl);
         return NULL;
     }
@@ -122,6 +127,8 @@ ast_decl_t* parser_parse_declaration(lexer_token_iterator_t* iter) {
     // If it is NOT followed by '=' its an error, you either end declaration or provide value
     if(token->type != TOKEN_EQUAL) {
         fprintf(stderr, "[parser] Error in declaration in line %zu char %zu: Expected value or end of declaration.\n", new_decl->line_ref, new_decl->char_ref);
+        type_destroy(new_decl->type);
+        free(new_decl->symbol);
         free(new_decl);
         return NULL;
     }
@@ -132,6 +139,8 @@ ast_decl_t* parser_parse_declaration(lexer_token_iterator_t* iter) {
         token = lexer_token_iter_next(iter);
         if(token == NULL) {
             fprintf(stderr, "[parser] Error in declaration in line %zu char %zu: Unexpected end of file.\n", new_decl->line_ref, new_decl->char_ref);
+            type_destroy(new_decl->type);
+            free(new_decl->symbol);
             free(new_decl);
             return NULL;
         }
@@ -148,14 +157,12 @@ int parser_process_token_list(lexer_token_list_t* list, ast_global_scope_t* ast)
     lexer_token_iterator_t iter;
     lexer_token_list_into_iter(list, &iter);
 
-    ast_decl_list_t* decls = ast_decl_list_make();
-
+    ast_decl_list_t* decls = ast->decls;
     while(lexer_token_iter_isnt_empty(&iter)) {
         ast_decl_t* new_decl = parser_parse_declaration(&iter);
 
         if(new_decl == NULL) {
             fprintf(stderr, "%s", "[parser] Error during parsing of global declarations.\n");
-            ast_decl_list_destroy(decls);
             return 1;
         }
 

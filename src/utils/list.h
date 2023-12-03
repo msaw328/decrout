@@ -33,7 +33,7 @@
     struct type_prefix##_list_t {   \
         size_t num_elements;        \
         size_t alloc_elements;      \
-        inner_type* arr;            \
+        inner_type** arr;           \
     };                              \
     typedef struct type_prefix##_list_t type_prefix##_list_t;   \
     type_prefix##_list_t* type_prefix##_list_make();        \
@@ -42,18 +42,21 @@
 
 // Implementation details:
 // list_make() dynamically allocates a list and returns a pointer to it (has default_size capacity at beginning)
-// each element is of type inner_type
+// each element is of type inner_type*
 // the default grow strategy is to increase the capacity 2x
-// list_append() takes a pointer to a inner_type structure and COPIES its contents into the array
+// list_append() takes a pointer to a inner_type structure and copies THE POINTER (not the data)
+// Because of this, its up to the child structure to determine whether pointer points to static or dynamic memory
 // elem_destroy_callback must be a name of the function that takes inner_type* as an argument, and whose
 // role is to properly clean up each list element before the list itself may be freed.
 // If no special care is needed for each element, elem_destroy_callback can be supplied with NULL.
 // elem_destroy_callback's signature should be void func_name(inner_type*);
+// elem_destroy_callback should call free() on the elem wherever it is needed 
+// (might not always be, see types - builtin types are actually static structs, and type_destroy() reflects that).
 #define UTILS_LIST_MAKE_IMPLEMENTATION(type_prefix, inner_type, default_size, elem_destroy_callback) \
     void __##type_prefix##_list_grow(type_prefix##_list_t* l) {     \
         l->alloc_elements = 2 * l->alloc_elements;                  \
-        inner_type* new_arr = malloc(l->alloc_elements * sizeof(inner_type));   \
-        memcpy(new_arr, l->arr, l->num_elements * sizeof(inner_type));  \
+        inner_type** new_arr = malloc(l->alloc_elements * sizeof(inner_type*));   \
+        memcpy(new_arr, l->arr, l->num_elements * sizeof(inner_type*));  \
         free(l->arr);   \
         l->arr = new_arr;   \
     }   \
@@ -62,7 +65,7 @@
         type_prefix##_list_t* l = malloc(sizeof(type_prefix##_list_t)); \
         l->num_elements = 0;  \
         l->alloc_elements = (size_t) default_size;  \
-        l->arr = malloc(default_size * sizeof(inner_type)); \
+        l->arr = malloc(default_size * sizeof(inner_type*)); \
         return l; \
     }   \
     \
@@ -70,7 +73,7 @@
         if(l->num_elements >= l->alloc_elements) {  \
             __##type_prefix##_list_grow(l);  \
         }   \
-        memcpy(&(l->arr[l->num_elements]), elem, sizeof(inner_type)); \
+        l->arr[l->num_elements] = elem; \
         l->num_elements += 1;   \
     }   \
     void type_prefix##_list_destroy(type_prefix##_list_t* l) {  \
@@ -78,7 +81,7 @@
         void (*cleanup_callback)(inner_type*) = elem_destroy_callback;  \
         if(cleanup_callback != NULL) {  \
             for(size_t i = 0; i < l->num_elements; i++) { \
-                inner_type* elem = &(l->arr[i]);    \
+                inner_type* elem = l->arr[i];    \
                 cleanup_callback(elem); \
             };  \
         };  \
@@ -87,6 +90,6 @@
     }
 
 #define UTILS_LIST_GENERIC_LENGTH(list_ptr) (list_ptr->num_elements)
-#define UTILS_LIST_GENERIC_GET(list_ptr, index) ((index < list_ptr->num_elements) ? &(list_ptr->arr[index]) : NULL)
+#define UTILS_LIST_GENERIC_GET(list_ptr, index) ((index < list_ptr->num_elements) ? list_ptr->arr[index] : NULL)
 
 #endif
