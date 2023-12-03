@@ -24,9 +24,6 @@
 #include "utils/list.h"
 #include "types/types.h"
 
-// TODO: Once ast_decl_t contains dynamic data (list of expr) uncomment this and implement it
-// void ast_decl_destroy(ast_decl_t* decl);
-
 void ast_decl_destroy(ast_decl_t* decl) {
     type_destroy(decl->type);
     free(decl->symbol);

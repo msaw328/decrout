@@ -21,10 +21,12 @@ The decrout compiler, called dcrtc, is currently developed in C. Once the langua
 The intended functionality is for dcrtc to consume a single source file of decrout and produce a single assembly file from it (or some other output, depending on the backend), which can be then assembled by the GAS. Intended extension for decrout source files is .dcrt (this may change in the future, as it is very similar to the Dart language).
 
 ### Current state of the compiler
-Dcrtc was developed up to the point of parsing declarations properly, but then i decided the code was too disorganized and needed a refactor/rewrite. Currently lexing/tokenization has been redone, but the interface is not compatible with old version of parsing. Parsing of declarations will be refactored and then i can move onto parsing of expressions etc.
+Dcrtc seems to parse declarations properly, at least along with the current language spec. The work is now focused on parsing expressions. Afterwards, once the AST is complete, validity checks should be performed, type inferrence etc.
 
 ### Building
 Just run `make` in the root directory of the project (the one this README is stored in). This will create a build directory which contains all the object files and the dcrtc binary. At the moment one needs some kind of C compiler to compile it. It uses libc extensively, but has no other dependencies besides it.
+
+To add more flags to the C compiler one can use MORE_FLAGS Make variable like so: `make MORE_FLAGS="-ggdb3" all` (useful for debugging).
 
 # License and copyright
 I am not sure if the language itself can be licensed, but my intention is for anyone to be able to use it free of charge. As for the dcrtc code it is licensed under GPLv3 as described in the [LICENSE](LICENSE) file.
