@@ -14,20 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// parser - Parsing functionality for AST primitives
-
-#ifndef _I_PARSER_PARSER_H_
-#define _I_PARSER_PARSER_H_
+// output - Printing output of the lexing stage
 
 #include <stdio.h>
 
-#include "lexer/token_list.h"
-#include "ast/ast.h"
+#include "token_list.h"
 
-// Processes the token list and generates AST
-int parser_process_token_list(lexer_token_list_t* list, ast_global_scope_t* ast);
+void lexer_write_output(FILE* outfile, lexer_token_list_t* list) {
+    lexer_token_iterator_t iter = { 0 };
+    lexer_token_list_into_iter(list, &iter);
 
-// Output from the parsing stage
-void parser_write_output(FILE* outfile, ast_global_scope_t* ast);
-
-#endif
+    lexer_token_t* tk = NULL;
+    while((tk = lexer_token_iter_next(&iter)) != NULL) {
+        fprintf(outfile, "Token {\n\ttype - %u\n\tcontents - %s\n\tline - %zu\n\tchar - %zu\n}\n",
+            tk->type, tk->contents != NULL ? tk->contents : "(empty)", tk->line_ref, tk->char_ref
+        );
+    }
+}

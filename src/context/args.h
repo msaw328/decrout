@@ -14,20 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// parser - Parsing functionality for AST primitives
+// args - General cli argument handling
 
-#ifndef _I_PARSER_PARSER_H_
-#define _I_PARSER_PARSER_H_
+#ifndef _I_CONTEXT_ARGS_H_
+#define _I_CONTEXT_ARGS_H_
 
 #include <stdio.h>
 
-#include "lexer/token_list.h"
-#include "ast/ast.h"
+// Enumeration for constants defining compiler passes
+enum context_stage_t {
+#define STAGE_FIRST STAGE_LEXER
+    STAGE_LEXER = 0,
+    STAGE_PARSER,
+#define STAGE_LAST STAGE_PARSER
+};
+typedef enum context_stage_t context_stage_t;
 
-// Processes the token list and generates AST
-int parser_process_token_list(lexer_token_list_t* list, ast_global_scope_t* ast);
+// Structure which contains CLI flags which modify compiler behavior
+struct context_args_t {
+    context_stage_t output_stage;   // After which stage should compiler output
+    FILE* output_file;              // FILE* to write output to
+    FILE* input_file;               // FILE* to read input from
+};
+typedef struct context_args_t context_args_t;
 
-// Output from the parsing stage
-void parser_write_output(FILE* outfile, ast_global_scope_t* ast);
+// The args structure is malloc'ed - requires freeing
+context_args_t* context_args_parse(int argc, char** argv);
 
 #endif

@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #include "token_list.h"
 
@@ -29,5 +30,8 @@
 //
 // Return value: 0 if ok, 1 if error
 int lexer_process_source_code(char* src_str, lexer_token_list_t* list);
+
+// Output from the lexing stage
+void lexer_write_output(FILE* outfile, lexer_token_list_t* list);
 
 #endif

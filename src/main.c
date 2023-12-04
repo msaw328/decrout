@@ -21,41 +21,25 @@
 #include "parser/parser.h"
 #include "types/types.h"
 #include "utils/list.h"
-
-#include "version.h"
+#include "context/args.h"
 
 #include <stdio.h>
 #include <string.h>
 
-void print_usage_and_exit(char** argv) {
-    puts("dcrtc - Decrout compiler");
-    printf("Usage: %s <filename>\n", argv[0]);
-    printf("%s -h for help, %s -v for version information\n", argv[0], argv[0]);
-    exit(0);
-}
 
-void print_version_and_exit() {
-    puts("dcrtc - Decrout compiler");
-    puts("Copyright (C) 2023  Maciej Sawka <maciejsawka@gmail.com> <msaw328@kretes.xyz>");
-    printf("Commit id: %s\nBuild date: %s\n\n", DCRTC_COMMIT_ID, DCRTC_BUILD_DATE);
-}
 
 int main(int argc, char** argv) {
 #if 1
-    if(argc < 2 || strcmp(argv[1], "-h") == 0) {
-        print_usage_and_exit(argv);
-        return 0;
-    }
-
-    if(strcmp(argv[1], "-v") == 0) {
-        print_version_and_exit();
+    context_args_t* args = context_args_parse(argc, argv);
+    if(args == NULL) {
         return 0;
     }
 
     // Retrieve source code from somewhere (in this case, a file)
     // Store it as a null-terminated string
-    char* filecontents = io_read_source_file(argv[1]);
+    char* filecontents = io_read_source_file(args->input_file);
     if(filecontents == NULL) {
+        free(args);
         return 0;
     }
 
@@ -69,43 +53,39 @@ int main(int argc, char** argv) {
 
     // Error checking
     if(result != 0) {
+        free(args);
+        return 0;
+    }
+
+    if(args->output_stage == STAGE_LEXER) {
+        lexer_write_output(args->output_file, list);
+        free(args);
         return 0;
     }
 
     ast_global_scope_t* ast = ast_global_scope_make();
     result = parser_process_token_list(list, ast);
 
-#if 0
-    for(size_t i = 0; i < UTILS_LIST_GENERIC_LENGTH(list); i++) {
-        lexer_token_t* tk = UTILS_LIST_GENERIC_GET(list, i);
-        printf("token %zu: type = %d, contents = %p\n", i, tk->type, (void*) tk->contents);
-    }
-#endif
-
     // After all tokens have been consumed, destroy the list.
     lexer_token_list_destroy(list);
 
     // Error checking
     if(result != 0) {
+        free(args);
         ast_global_scope_destroy(ast);
         return 0;
     }
 
-    ast_decl_list_t* decls = ast->decls;
-    for(size_t i = 0; i < UTILS_LIST_GENERIC_LENGTH(decls); i++) {
-        ast_decl_t* decl = UTILS_LIST_GENERIC_GET(decls, i);
-        char* type_str = type_to_string(decl->type);
-        printf("Decl %zu (ref %zu:%zu) ::: | Symbol: %s | Type: %s | Is const: %d |\n", 
-            i,
-            decl->line_ref,
-            decl->char_ref,
-            decl->symbol,
-            type_str,
-            decl->is_const
-        );
-        free(type_str);
+    if(args->output_stage == STAGE_PARSER) {
+        parser_write_output(args->output_file, ast);
+        ast_global_scope_destroy(ast);
+        free(args);
+        return 0;
     }
 
+    // TODO: After parsing is finished move to next stage (probably validity checks?)
+
+    free(args);
     ast_global_scope_destroy(ast);
 #endif
 }

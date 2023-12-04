@@ -19,6 +19,8 @@
 #ifndef _I_IO_FILEREAD_H_
 #define _I_IO_FILEREAD_H_
 
-char* io_read_source_file(char* filename);
+#include <stdio.h>
+
+char* io_read_source_file(FILE* infile);
 
 #endif

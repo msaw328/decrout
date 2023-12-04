@@ -12,7 +12,14 @@ BUILD_DATE := $(shell date --rfc-3339=seconds)
 CFLAGS := -DDCRTC_COMMIT_ID="\"$(COMMIT_ID)\"" -DDCRTC_BUILD_DATE="\"$(BUILD_DATE)\"" $(MORE_FLAGS) -Wall -Werror -Wextra -pedantic -std=c99 -Isrc/
 
 # List of source files
-SRC := main.c io/fileread.c lexer/lexer.c lexer/token_list.c types/types.c types/type_list.c ast/ast.c ast/decl_list.c parser/parser.c parser/parse_types.c
+SRC := 	main.c \
+		context/args.c \
+		io/fileread.c \
+		lexer/lexer.c lexer/token_list.c lexer/output.c \
+		types/types.c types/type_list.c \
+		ast/ast.c ast/decl_list.c \
+		parser/parser.c parser/parse_types.c parser/output.c
+
 SRC := $(patsubst %,src/%,$(SRC))
 
 # List of object files of the library

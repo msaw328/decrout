@@ -21,24 +21,22 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <errno.h>
 
-char* io_read_source_file(char* filename) {
-    struct stat statbuf = { 0 };
-    stat(filename, &statbuf);
-
-    size_t filesize = statbuf.st_size;
-    char* filecontents = malloc(filesize + 1);
-
-    FILE* infile = fopen(filename, "r");
+char* io_read_source_file(FILE* infile) {
     if(infile == NULL) {
-        fprintf(stderr, "[io] Error opening source file %s: %s\n", filename, strerror(errno));
+        fprintf(stderr, "[io] Error reading source: file was not provided\n");
         return NULL;
     }
 
+    // https://stackoverflow.com/a/14002993/5457426
+    fseek(infile, 0, SEEK_END);
+    long filesize = ftell(infile);
+    fseek(infile, 0, SEEK_SET);
+
+    char* filecontents = malloc(filesize + 1);
+
     fread(filecontents, 1, filesize, infile);
-    fclose(infile);
     filecontents[filesize] = '\0';
 
     return filecontents;
